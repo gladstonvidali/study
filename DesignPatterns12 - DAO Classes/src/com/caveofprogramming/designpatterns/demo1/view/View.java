@@ -7,6 +7,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.sql.SQLException;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -111,31 +112,31 @@ public class View extends JFrame implements ActionListener {
 		gc.fill = GridBagConstraints.NONE;
 
 		add(okButton, gc);
-		
+
 		gc.anchor = GridBagConstraints.FIRST_LINE_START;
 		gc.gridx = 2;
 		gc.gridy = 5;
 		gc.weightx = 1;
 		gc.weighty = 1000;
 		gc.fill = GridBagConstraints.NONE;
-		
+
 		add(loginButton, gc);
-		
+
 		okButton.addActionListener(this);
 		loginButton.addActionListener(this);
-		
+
 		// Database db = new Database();
 		// Database db = Database.getInstance();
-		
+
 		addWindowListener(new WindowAdapter() {
-			
+
 			@Override
 			public void windowOpened(WindowEvent e) {
 				try {
 					Database.getInstance().connect();
 				} catch (Exception e1) {
-					JOptionPane.showMessageDialog(View.this, "Unable to connect to database.",
-							"Error", JOptionPane.WARNING_MESSAGE);
+					JOptionPane.showMessageDialog(View.this, "Unable to connect to database.", "Error",
+							JOptionPane.WARNING_MESSAGE);
 					e1.printStackTrace();
 				}
 			}
@@ -144,7 +145,7 @@ public class View extends JFrame implements ActionListener {
 			public void windowClosing(WindowEvent e) {
 				Database.getInstance().disconnect();
 			}
-			
+
 		});
 
 		setSize(600, 500);
@@ -158,14 +159,24 @@ public class View extends JFrame implements ActionListener {
 		String password = new String(passField.getPassword());
 		String repeat = new String(repeatPassField.getPassword());
 		String name = new String(nameField.getText());
-		
-		if (e.getSource() == loginButton){ fireLoginEvent(new CreateUserEvent("login", name, password)); }
-		else if (password.equals(repeat)) {			
-			if (e.getSource() == okButton){ fireLoginEvent(new CreateUserEvent("create", name, password)); }
-			
+
+		if (e.getSource() == loginButton) {
+			try {
+				fireLoginEvent(new CreateUserEvent("login", name, password));
+			} catch (SQLException e1) {
+				e1.printStackTrace();
+			}
+		} else if (password.equals(repeat)) {
+			if (e.getSource() == okButton) {
+				try {
+					fireLoginEvent(new CreateUserEvent("create", name, password));
+				} catch (SQLException e1) {
+					e1.printStackTrace();
+				}
+			}
+
 		} else {
-			JOptionPane.showMessageDialog(this, "Passwords do not match.",
-					"Error", JOptionPane.WARNING_MESSAGE);
+			JOptionPane.showMessageDialog(this, "Passwords do not match.", "Error", JOptionPane.WARNING_MESSAGE);
 		}
 	}
 
@@ -173,7 +184,7 @@ public class View extends JFrame implements ActionListener {
 		this.loginListener = loginListener;
 	}
 
-	public void fireLoginEvent(CreateUserEvent event) {
+	public void fireLoginEvent(CreateUserEvent event) throws SQLException {
 		if (loginListener != null) {
 			loginListener.userCreated(event);
 		}

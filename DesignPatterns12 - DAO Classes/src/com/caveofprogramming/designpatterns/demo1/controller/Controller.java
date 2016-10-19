@@ -11,6 +11,7 @@ import com.caveofprogramming.designpatterns.demo1.view.CreateUserListener;
 import com.caveofprogramming.designpatterns.demo1.view.View;
 
 public class Controller implements CreateUserListener {
+
 	private View view;
 	private Model model;
 
@@ -22,37 +23,42 @@ public class Controller implements CreateUserListener {
 	}
 
 	@Override
-	public void userCreated(CreateUserEvent event) {
-		
-		if (event.getType().equals("login")){			
-			try {
-				System.out.println("Login event received: " + event.getName() + "; " + event.getPassword());
-				List<Person> person = personDAO.getPeople();
-				for (Person p : person){
-					if (p.getName().equals(event.getName())){
-						System.out.println("Logged In!!");
-						return;						
-					}	
-				}	
-				System.out.println("Not Logged In!!");
-				
-				
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}else if(event.getType().equals("create"))
+	public void userCreated(CreateUserEvent event) throws SQLException {
 
-	{
+		if ("login".equals(event.getType())) {
+			processLogin(event);
+		} else if ("create".equals(event.getType()))
+
+		{
+			processCreate(event);
+		}
+
+	}
+	
+	private void processLogin(CreateUserEvent event) throws SQLException{
+		try {
+			System.out.println("Login event received: " + event.getName() + "; " + event.getPassword());
+			List<Person> person = personDAO.getPeople();
+			for (Person p : person) {
+				if (p.getName().equals(event.getName())) {
+					System.out.println("Logged In!!");
+					return;
+				}
+			}
+			System.out.println("Not Logged In!!");
+
+		} catch (SQLException e) {
+			throw new SQLException(e);
+		}
+	}
+	
+	private void processCreate(CreateUserEvent event) throws SQLException{
 		try {
 			System.out.println("Create event received: " + event.getName() + "; " + event.getPassword());
 			personDAO.addPerson(new Person(event.getName(), event.getPassword()));
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new SQLException(e);
 		}
 	}
-
-}
 
 }
